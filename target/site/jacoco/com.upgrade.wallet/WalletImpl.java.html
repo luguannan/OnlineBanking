@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WalletImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet</a> &gt; <a href="index.source.html" class="el_package">com.upgrade.wallet</a> &gt; <span class="el_source">WalletImpl.java</span></div><h1>WalletImpl.java</h1><pre class="source lang-java linenums">package com.upgrade.wallet;
+
+import com.upgrade.wallet.api.Account;
+import com.upgrade.wallet.api.Bank;
+import com.upgrade.wallet.api.Wallet;
+import com.upgrade.wallet.exception.NoSuchAccountException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Created by luguannan on 2018/11/7.
+ */
+public class WalletImpl implements Wallet {
+
+    String id;
+    ISBankImpl bank;
+
+<span class="fc" id="L22">    protected WalletImpl(String id, ISBankImpl bank) {</span>
+<span class="fc" id="L23">        this.id = id;</span>
+<span class="fc" id="L24">        this.bank = bank;</span>
+<span class="fc" id="L25">    }</span>
+
+    public String getId() {
+<span class="fc" id="L28">        return id;</span>
+    }
+
+    public Account createAccount() {
+<span class="fc" id="L32">        return bank.createAccount(this);</span>
+    }
+
+    public Account getAccount(String id) throws NoSuchAccountException {
+<span class="fc" id="L36">        return bank.getAccount(id);</span>
+    }
+
+    public void destroyAccount(Account account) throws NoSuchAccountException {
+<span class="fc" id="L40">        bank.destroyAccount(this, account);</span>
+<span class="fc" id="L41">    }</span>
+
+    @Override
+    public List&lt;AccountImpl&gt; listAllAccount() {
+<span class="fc" id="L45">        Map&lt;String, AccountImpl&gt; map = bank.walletAccountsMap.get(id);</span>
+<span class="fc" id="L46">        List&lt;AccountImpl&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        for(String s : map.keySet()){</span>
+<span class="fc" id="L48">            list.add(map.get(s));</span>
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">        return list;</span>
+    }
+
+    protected static WalletImpl newWallet(ISBankImpl bank) {
+<span class="fc" id="L54">        return new WalletImpl(Utils.generateId(), bank);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

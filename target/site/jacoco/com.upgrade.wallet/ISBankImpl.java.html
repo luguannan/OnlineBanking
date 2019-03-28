@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ISBankImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet</a> &gt; <a href="index.source.html" class="el_package">com.upgrade.wallet</a> &gt; <span class="el_source">ISBankImpl.java</span></div><h1>ISBankImpl.java</h1><pre class="source lang-java linenums">package com.upgrade.wallet;
+
+import com.upgrade.wallet.api.Account;
+import com.upgrade.wallet.api.Bank;
+import com.upgrade.wallet.api.Wallet;
+import com.upgrade.wallet.exception.AccountsStillExistException;
+import com.upgrade.wallet.exception.NoSuchAccountException;
+import com.upgrade.wallet.exception.UserNameAlreadyExistsException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+<span class="fc" id="L14">public class ISBankImpl implements Bank {</span>
+
+<span class="fc" id="L16">    Map&lt;String, WalletImpl&gt; walletMap = new ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L18">    Map&lt;String, Map&lt;String, AccountImpl&gt;&gt; walletAccountsMap = new ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L20">    Map&lt;String, AccountImpl&gt; allAccountIndex = new ConcurrentHashMap&lt;&gt;();</span>
+
+    @Override
+    public WalletImpl createWallet(String username) throws UserNameAlreadyExistsException {
+        // check if username is being taken.
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (walletMap.containsKey(username)) {</span>
+<span class="fc" id="L26">            throw new UserNameAlreadyExistsException();</span>
+        }
+<span class="fc" id="L28">        WalletImpl wallet = WalletImpl.newWallet(this);</span>
+<span class="fc" id="L29">        walletMap.put(username, wallet);</span>
+<span class="fc" id="L30">        return wallet;</span>
+    }
+
+    @Override
+
+    public void destroyWallet(String username, WalletImpl wallet) throws NoSuchAccountException, AccountsStillExistException {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if(!walletMap.containsKey(username)){</span>
+<span class="nc" id="L37">            throw new NoSuchAccountException(&quot;The wallet does not exist!&quot;);</span>
+        }
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if(walletMap.containsKey(username) &amp;&amp; walletAccountsMap.get(wallet.getId()).size() == 0){</span>
+<span class="fc" id="L40">            walletMap.remove(username);</span>
+<span class="fc" id="L41">            walletAccountsMap.remove(wallet.getId());</span>
+        }
+        else{
+<span class="fc" id="L44">            throw new AccountsStillExistException(&quot;You must destroy all connected accounts first!&quot;);</span>
+        }
+<span class="fc" id="L46">    }</span>
+
+    protected AccountImpl createAccount(WalletImpl wallet) {
+<span class="fc" id="L49">        AccountImpl account = AccountImpl.newAccount(this);</span>
+<span class="fc" id="L50">        Map&lt;String, AccountImpl&gt; accountMap =  walletAccountsMap.get(wallet.getId());</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        if (accountMap == null) {</span>
+<span class="fc" id="L52">            accountMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L53">            walletAccountsMap.put(wallet.getId(), accountMap);</span>
+        }
+<span class="fc" id="L55">        accountMap.put(account.getId(), account);</span>
+<span class="fc" id="L56">        allAccountIndex.put(account.getId(), account);</span>
+<span class="fc" id="L57">        return account;</span>
+    }
+
+    protected AccountImpl getAccount(String accountId) throws NoSuchAccountException {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (!allAccountIndex.containsKey(accountId)) {</span>
+<span class="fc" id="L62">            throw new NoSuchAccountException();</span>
+        }
+<span class="fc" id="L64">        return allAccountIndex.get(accountId);</span>
+    }
+
+    protected void destroyAccount(WalletImpl wallet, Account account) throws NoSuchAccountException {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        if(!walletAccountsMap.containsKey(wallet.getId())){</span>
+<span class="nc" id="L69">            throw new NoSuchAccountException(&quot;The wallet does not exist!&quot;);</span>
+        }
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if(!allAccountIndex.containsKey(account.getId())){</span>
+<span class="fc" id="L72">            throw new NoSuchAccountException();</span>
+        }
+<span class="fc" id="L74">        Map&lt;String, AccountImpl&gt; walletAccount = walletAccountsMap.get(wallet.getId());</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">        if(!walletAccount.containsKey(account.getId())){</span>
+<span class="nc" id="L76">            throw new NoSuchAccountException();</span>
+        }
+<span class="fc" id="L78">        allAccountIndex.remove(account.getId());</span>
+<span class="fc" id="L79">        walletAccount.remove(account.getId());</span>
+<span class="fc" id="L80">        walletAccountsMap.put(wallet.getId(), walletAccount);</span>
+
+<span class="fc" id="L82">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

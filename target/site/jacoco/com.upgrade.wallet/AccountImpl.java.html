@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccountImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet</a> &gt; <a href="index.source.html" class="el_package">com.upgrade.wallet</a> &gt; <span class="el_source">AccountImpl.java</span></div><h1>AccountImpl.java</h1><pre class="source lang-java linenums">package com.upgrade.wallet;
+
+import com.upgrade.wallet.api.Account;
+import com.upgrade.wallet.api.Transaction;
+import com.upgrade.wallet.exception.IllegalAmountException;
+import com.upgrade.wallet.exception.InsufficientFundException;
+import com.upgrade.wallet.exception.NoSuchAccountException;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Created by luguannan on 2018/11/7.
+ */
+public class AccountImpl implements Account {
+
+    String id;
+    double balance;
+    ISBankImpl bank;
+    List&lt;Transaction&gt; transactionLog;
+
+<span class="fc" id="L23">    protected AccountImpl(String id, double balance, ISBankImpl bank) {</span>
+<span class="fc" id="L24">        this.id = id;</span>
+<span class="fc" id="L25">        this.balance = balance;</span>
+<span class="fc" id="L26">        this.bank = bank;</span>
+<span class="fc" id="L27">        transactionLog = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L28">    }</span>
+
+    public String getId() {
+<span class="fc" id="L31">        return id;</span>
+    }
+
+    public synchronized void deposit(double value) throws IllegalAmountException {
+<span class="fc" id="L35">        Utils.validateAmount(value);</span>
+        // create transction log
+<span class="fc" id="L37">        Transaction t = new Transaction(Transaction.TransactionType.DEPOSIT,</span>
+<span class="fc" id="L38">                Utils.generateId(), value, null, id, new Date());</span>
+        //balance += value;
+<span class="fc" id="L40">        balance = Utils.add(balance, value);</span>
+<span class="fc" id="L41">        transactionLog.add(t);</span>
+<span class="fc" id="L42">    }</span>
+
+    public synchronized void withdraw(double value) throws InsufficientFundException, IllegalAmountException {
+<span class="fc" id="L45">        Utils.validateAmount(value);</span>
+<span class="fc" id="L46">        Utils.validateFund(balance, value);</span>
+<span class="fc" id="L47">        Transaction t = new Transaction(Transaction.TransactionType.WITHDRAW,</span>
+<span class="fc" id="L48">                Utils.generateId(), value, id, null, new Date());</span>
+        //balance -= value;
+<span class="fc" id="L50">        balance = Utils.subtract(balance, value);</span>
+<span class="fc" id="L51">        transactionLog.add(t);</span>
+
+<span class="fc" id="L53">    }</span>
+
+    public synchronized void transfer(String otherId, double value) throws InsufficientFundException, IllegalAmountException, NoSuchAccountException {
+<span class="fc" id="L56">        Utils.validateAmount(value);</span>
+<span class="fc" id="L57">        AccountImpl receiver = bank.getAccount(otherId);</span>
+<span class="fc" id="L58">        String tid = Utils.generateId();</span>
+<span class="fc" id="L59">        Date time = new Date();</span>
+<span class="fc" id="L60">        this.makeTransfer(otherId, value, tid, time);</span>
+<span class="fc" id="L61">        receiver.receiveTransfer(id, value, tid, time);</span>
+<span class="fc" id="L62">    }</span>
+
+    protected void makeTransfer(String toId, double value, String transactionId, Date date) throws IllegalAmountException, InsufficientFundException {
+<span class="fc" id="L65">        Utils.validateAmount(value);</span>
+<span class="fc" id="L66">        Utils.validateFund(balance, value);</span>
+        //balance -= value;
+<span class="fc" id="L68">        balance = Utils.subtract(balance, value);</span>
+<span class="fc" id="L69">        Transaction transaction = new Transaction(Transaction.TransactionType.TRANSFER,</span>
+                transactionId, value, id, toId, date);
+<span class="fc" id="L71">        transactionLog.add(transaction);</span>
+
+<span class="fc" id="L73">    }</span>
+
+    protected void receiveTransfer( String fromId, double value, String transactionId, Date date) throws IllegalAmountException {
+<span class="fc" id="L76">        Utils.validateAmount(value);</span>
+        //balance += value;
+<span class="fc" id="L78">        balance = Utils.add(balance,value);</span>
+<span class="fc" id="L79">        Transaction transaction = new Transaction(Transaction.TransactionType.TRANSFER,</span>
+                transactionId, value, fromId, id, date);
+<span class="fc" id="L81">        transactionLog.add(transaction);</span>
+
+<span class="fc" id="L83">    }</span>
+
+    public double getBalance() {
+<span class="fc" id="L86">        return balance;</span>
+    }
+
+    public List&lt;Transaction&gt; getLastNTransactions(int n) {
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (transactionLog.size() &lt;= n) return transactionLog;</span>
+<span class="fc" id="L91">        else return transactionLog.subList(transactionLog.size() - n, transactionLog.size());</span>
+    }
+
+    public static AccountImpl newAccount(ISBankImpl bank) {
+<span class="fc" id="L95">        return new AccountImpl(Utils.generateId(), 0.0, bank);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

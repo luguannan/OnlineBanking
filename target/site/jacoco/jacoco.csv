@@ -1,0 +1,14 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+wallet,com.upgrade.wallet,Utils,3,90,0,6,1,18,1,8,1,5
+wallet,com.upgrade.wallet,ISBankImpl,14,174,4,14,3,35,4,11,0,6
+wallet,com.upgrade.wallet,AccountImpl,3,186,1,1,0,42,1,10,0,10
+wallet,com.upgrade.wallet,WalletImpl,0,66,0,2,0,16,0,8,0,7
+wallet,com.upgrade.wallet.api,Transaction.TransactionType,9,39,0,0,0,4,2,2,2,2
+wallet,com.upgrade.wallet.api,Transaction,68,33,0,0,14,12,9,5,9,5
+wallet,com.upgrade.wallet.exception,BankException,9,7,0,0,4,4,2,2,2,2
+wallet,com.upgrade.wallet.exception,AccountsStillExistException,12,4,0,0,6,2,3,1,3,1
+wallet,com.upgrade.wallet.exception,UserNameAlreadyExistsException,13,3,0,0,6,2,3,1,3,1
+wallet,com.upgrade.wallet.exception,IllegalAmountException,12,4,0,0,6,2,3,1,3,1
+wallet,com.upgrade.wallet.exception,InsufficientFundException,0,3,0,0,0,1,0,1,0,1
+wallet,com.upgrade.wallet.exception,NoSuchAccountException,13,3,0,0,6,2,3,1,3,1
+wallet,com.upgrade.wallet.exception,AccountException,9,7,0,0,4,4,2,2,2,2
